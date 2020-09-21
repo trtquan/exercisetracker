@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const User = mongoose.model('User');
 const Exercise = mongoose.model('Exercise');
+const mongoose = require('mongoose');
+const moment = require('moment');
+
 /**
  * I can create a user by posting form data username to 
  * /exercise/new-user
