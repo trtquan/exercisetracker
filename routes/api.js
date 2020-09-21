@@ -35,7 +35,6 @@ router.post('/add', (req, res, next) => {
     }
     
     const exercise = new Exercises(req.body)
-    exercise.username = user.username
     exercise.save((err, savedExercise) => {
       if (err) return next(err)
       res.json(savedExercise)
