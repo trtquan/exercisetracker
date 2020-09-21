@@ -3,11 +3,11 @@ const Exercises = require('../models/exercises')
 
 const router = require('express').Router()
 
-router.post('/new-user/', (req, res, next) => {
+router.post('/new-user', (req, res) => {
   const user = new Users(req.body);
   console.log(user);
   user.save((err, savedUser) => { 
-    if (err) return next(err);
+    if (err) return console.log(err);;
     console.log(savedUser);
     res.json({
       username: savedUser.username,
