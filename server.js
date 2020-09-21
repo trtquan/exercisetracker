@@ -7,7 +7,7 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 mongoose.connect(process.env.DB_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology:true,
+  useUnifiedTopology:true
 });
 
 app.use(cors())
@@ -21,13 +21,13 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
+const apiRouter = require('./routes/api')
+app.use('/api/exercise', apiRouter)
 
 // Not found middleware
 app.use((req, res, next) => {
   return next({status: 404, message: 'not found'})
 })
-const api = require('./routes');
-app.use('/api', api);
 
 // Error Handling middleware
 app.use((err, req, res, next) => {

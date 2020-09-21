@@ -1,16 +1,8 @@
-const express = require('express');
-const router = express.Router();
-const mongoose = require('mongoose');
-const moment = require('moment');
-require('./model');
-const Users = mongoose.model('User');
-const Exercises = mongoose.model('Exercise');
+const Users = require('../models/users')
+const Exercises = require('../models/exercises')
 
-/**
- * I can create a user by posting form data username to 
- * /exercise/new-user
- *  and returned will be an object with username and _id.
- */
+const router = require('express').Router()
+
 router.post('/new-user', (req, res, next) => {
   const user = new Users(req.body);
   user.save((err, savedUser) => { 
