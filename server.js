@@ -26,6 +26,8 @@ app.get('/', (req, res) => {
 app.use((req, res, next) => {
   return next({status: 404, message: 'not found'})
 })
+const api = require('./routes');
+app.use('/api', api);
 
 // Error Handling middleware
 app.use((err, req, res, next) => {
