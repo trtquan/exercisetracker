@@ -17,6 +17,11 @@ const Exercises = new Schema({
     default: Date.now
   },
   username: String,
+  userId: {
+    type: String,
+    ref: 'Users',
+    index: true
+  }
 })
 
 
