@@ -60,6 +60,6 @@ router.get('/exercise/log', (req, res, next) => {
 				})
 	})
 }
-)
+)})
 
 module.exports = router;
