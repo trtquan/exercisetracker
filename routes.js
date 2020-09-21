@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const moment = require('moment');
+require('./model');
 const User = mongoose.model('User');
 const Exercise = mongoose.model('Exercise');
 
