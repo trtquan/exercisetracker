@@ -9,7 +9,6 @@ mongoose.connect(process.env.DB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology:true
 });
-
 app.use(cors())
 
 app.use(bodyParser.urlencoded({extended: false}))
