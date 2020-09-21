@@ -39,7 +39,7 @@ router.post("/add", (req, res, next) => {
     const duration = Number(req.body.duration);
     const date = Date.parse(req.body.date);
 
-    const newExercise = new Exercise({
+    const exercise = new Exercise({
       username,
       description,
       duration,
