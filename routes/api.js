@@ -38,7 +38,8 @@ router.post('/add', (req, res, next) => {
     exercise.username = user.username
     exercise.save((err, savedExercise) => {
       if (err) return next(err)
-      res.json(savedExercise)
+      res.json({username: user.username, _id: user._id, description: savedExercise.description , duration: savedExercise.duration ,  date: new Date(savedExercise.date).toDateString()}
+      )
     })
       
   })
