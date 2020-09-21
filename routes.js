@@ -3,67 +3,107 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const moment = require('moment');
 require('./model');
-const User = mongoose.model('User');
-const Exercise = mongoose.model('Exercise');
+const Users = mongoose.model('User');
+const Exercises = mongoose.model('Exercise');
 
 /**
  * I can create a user by posting form data username to 
  * /exercise/new-user
  *  and returned will be an object with username and _id.
  */
-router.post('/exercise/new-user', (req, res) => {
-    const { username } = req.body;
-    User.findOne({username}, (err, user) => {
-			if (user) throw new Error('username already taken');
-			return User.create({ username }, (err, user) => {
-				if(err) {
-					console.log(err);
-					res.status(500).send(err.message);
-				}
-				res.status(200).send({
-					username: user.username,
-					_id: user._id
-			});
-			})
-		})
+router.post('/new-user', (req, res, next) => {
+  const user = new Users(req.body);
+  user.save((err, savedUser) => { 
+    if (err) return next(err);
+    res.json({
+      username: savedUser.username,
+      _id: savedUser._id
+    })
+  })
 })
 
-router.post('/exercise//add', (req, res, next) => {
-	const { userId, description, duration, date } = req.body;
+router.get('/users', (req,res,next) => {
+  Users.find({}, (err, data) => {
+    if (err) return next(err);
+    res.json(data)
+  })
+})
 
-  const newExercise = new Exercise({
-    userId, description, duration, date
-  });
+router.post('/add', (req, res, next) => {
+  Users.findById(req.body.userId, (err, user) => {
+    if (err) return next(err);
+    if (!user) {
+      return next(err)
+    }
+    if (req.body.date == '') {
+      let today = new Date().toISOString().slice(0, 10);
+      req.body.date = today;
+    }
+    
+    const exercise = new Exercises(req.body)
+    exercise.username = user.username
+    exercise.save((err, savedExercise) => {
+      if (err) return next(err)
+      res.json(savedExercise)
+    })
+      
+  })
+})
 
-  newExercise.save()
-  .then(() => res.json('Exercise added!'))
-  .catch(err => res.status(400).json('Error: ' + err));
-});
+router.get('/log', (req, res, next) => {
+  if (Object.keys(req.query).length == 0 || req.query.userId == '') {
+    Exercises.find({}, (err, data) => {
+      if (err) return next(err);
+      res.json(data)
+    })
+  } else {
+    console.log('from date: ' + req.query.from_date);
+    console.log('to date: ' + req.query.to_date);
+    const from = new Date(req.query.from_date)
+    const to = new Date(req.query.to_date)
+    console.log('from date: ' + from);
+    console.log('to date: ' + to);
+    console.log('non-empty /log request');
+    let out = {};
+    Users.findById(req.query.userId, (err, user) => {
+      Exercises.find({
+        userId: req.query.userId,
+        date: {
+          $lte: to != 'Invalid Date' ? to.getTime() : Date.now() ,
+          $gte: from != 'Invalid Date' ? from.getTime() : 0
+        }
+      })
+      .sort('-date')
+      .limit(parseInt(req.query.limit))
+      .exec((err, exercises) => {
+        if (err) return next(err)
+        if (exercises.length < 1) {
+          return next({status:400, message: 'unknown userId'})
+        } else {
+          console.log('user(typeof):  ' + user + '(' + typeof(user) + ')');
+          out = user.toJSON();
+          delete out.__v;
+          console.log('exercises.length:  ' + exercises.length);
+          out['count'] = exercises.length;
+          out['log'] = exercises.map(e => ({
+            description: e.description,
+            duration: e.duration,
+            date: e.date.toDateString()
+          }))
+          console.log(out);
+          res.json(out)
+        }
+      })
+    })
+  }
+})
 
-router.get('/exercise/log', (req, res, next) => {
-	let { userId, from, to, limit } = req.query;
-	from = moment(from, 'YYYY-MM-DD').isValid() ? moment(from, 'YYYY-MM-DD') : 0;
-	to = moment(to, 'YYYY-MM-DD').isValid() ? moment(to, 'YYYY-MM-DD') : moment().add(1000000000000);
-	User.findById(userId, (err, user) => {
-		if (!user) throw new Error('Unknown user with _id');
+router.post('/delete-user', (req, res, next) => {
+  Exercises.deleteMany({userId: req.body.userId}, function(err){});
+  Users.findByIdAndRemove(req.body.userId, (err, user) => {
+    if (err || !user) return next(err);
+    res.send("Removed");
+  })
+})
 
-		Exercise.find({ userId })
-				.where('date').gte(from).lte(to)
-				.limit(+limit)
-				.exec((err, log)  => {
-					if(err) res.status(500).send(err.message);
-					res.status(200).send({
-						_id: userId,
-						username: user.username,
-						count: log.length,
-						log: log.map(o => ({
-								description: o.description,
-								duration: o.duration,
-								date: moment(o).format('ddd MMMM DD YYYY')
-						}))
-				})
-	})
-}
-)})
-
-module.exports = router;
+module.exports = router
