@@ -5,6 +5,7 @@ const router = require('express').Router()
 
 router.post('/new-user', (req, res, next) => {
   const user = new Users(req.body);
+  console.log(user);
   user.save((err, savedUser) => { 
     if (err) return next(err);
     res.json({
